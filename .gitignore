@@ -1,0 +1,6 @@
+__pycache__/
+videos/
+*.sqlite3
+*.pyc
+*.mp4
+*.rest
