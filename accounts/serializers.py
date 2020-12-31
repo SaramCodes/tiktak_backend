@@ -37,3 +37,42 @@ class UserCreateSerializer(serializers.ModelSerializer):
         user.set_password(validated_data['password'])
         user.save()
         return user
+
+
+class ProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Profile
+        fields = ['image', 'description']
+
+
+class UserUpdateSerializer(serializers.ModelSerializer):
+    username = serializers.CharField(required=True)
+    email = serializers.EmailField(required=True)
+    description = serializers.CharField(source="profile.description")
+    image = serializers.ImageField(required=False, source="profile.image")
+    class Meta:
+        model = User
+        fields = ['email', 'username', 'first_name', 'last_name', 'description', 'image']
+ 
+    def update(self, instance, validated_data):
+        if validated_data['username'] != instance.username:
+            if User.objects.filter(username=validated_data['username']).exists():
+                raise serializers.ValidationError({"username": "username taken"})
+        if validated_data['email'] != instance.email:
+            if User.objects.filter(email=validated_data['email']).exists():
+                raise serializers.ValidationError({"email": "email already exists"})
+        try:
+            instance.first_name = validated_data['first_name']
+        except:
+            pass
+        try:
+            instance.last_name = validated_data['last_name']
+        except:
+            pass
+        instance.email = validated_data['email']
+        instance.username = validated_data['username']
+        instance.save()
+
+        # if validated_data['profile']['image'] != instance.profile.image:
+        # instance =super().update(instance, validated_data)
+        return instance        

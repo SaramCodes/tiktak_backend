@@ -26,7 +26,7 @@ class LikesSerializer(serializers.ModelSerializer):
 
 class PostDetailSerializer(serializers.ModelSerializer):
     comments = CommentSerializer(many=True, read_only=True, source="comment_set.all")
-    likes = LikesSerializer(many=True, read_only=True, source="likes.all")
+    likes = LikesSerializer(many=True, read_only=True)
     class Meta:
         model = Post
         fields = ['title', 'video', 'user', 'likes', 'comments']

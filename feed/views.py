@@ -6,7 +6,9 @@ from django.contrib.auth.models import User
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated 
 from rest_framework.exceptions import ValidationError
 
-#This view lists all the posts and creates a posts
+"""This API will return all the posts but will not not return the actual
+ comments and list of people who liked, it will only return the count. This API
+ is also responsible for creating a POST"""
 class PostListCreateView(generics.ListCreateAPIView):
     queryset = Post.objects.all()
     serializer_class = PostListCreateSerializer
@@ -14,16 +16,16 @@ class PostListCreateView(generics.ListCreateAPIView):
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
 
-#This view Retrieves a single post
+"""This API will return a single Post"""
 class PostDetailView(generics.RetrieveAPIView):
     queryset = Post.objects.all()
     serializer_class = PostDetailSerializer
     
-#This view creates a single comment
+"""This API will create a Comment for a Post"""
 class CommentCreateView(generics.CreateAPIView):
     queryset = User.objects.all()
     serializer_class = CommentSerializer
-    permission_classes = [IsAuthenticatedOrReadOnly]
+    permission_classes = [IsAuthenticated]
 
     def perform_create(self, serializer):
         user = User.objects.get(pk=serializer.validated_data['user'].pk)
