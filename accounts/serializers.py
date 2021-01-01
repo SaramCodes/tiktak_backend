@@ -3,7 +3,18 @@ from .models import Profile
 from django.contrib.auth.models import User
 from rest_framework.validators import UniqueValidator
 from django.contrib.auth.password_validation import validate_password
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
+class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
+    @classmethod
+    def get_token(cls, user):
+        token = super(CustomTokenObtainPairSerializer, cls).get_token(user)
+
+        # Add custom claims
+        token['username'] = user.username
+        return token
+
+        
 class UserCreateSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(required=True, validators=[UniqueValidator(queryset=User.objects.all())])
     password = serializers.CharField(write_only=True, required=True, validators=[validate_password])
@@ -42,7 +53,7 @@ class UserCreateSerializer(serializers.ModelSerializer):
 class ProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = Profile
-        fields = ['image', 'description']
+        fields = ['image']
 
 
 class UserUpdateSerializer(serializers.ModelSerializer):
@@ -75,4 +86,40 @@ class UserUpdateSerializer(serializers.ModelSerializer):
 
         # if validated_data['profile']['image'] != instance.profile.image:
         # instance =super().update(instance, validated_data)
-        return instance        
+        return instance    
+
+class UserSubFollowersSerializer(serializers.ModelSerializer):    
+    user = serializers.IntegerField(source="id")
+    user_image = serializers.ImageField(use_url=True, source="profile.image")
+    class Meta:
+        model = User
+        fields = ['user', 'username', 'user_image']
+
+class UserSubFollowingSerializer(serializers.ModelSerializer):    
+    user = serializers.IntegerField(source="id")
+    user_image = serializers.ImageField(use_url=True, source="profile.image")
+    class Meta:
+        model = User
+        fields = ['user', 'username', 'user_image']
+
+class UserFollowersSerializer(serializers.ModelSerializer):    
+    users = UserSubFollowersSerializer(many=True, source="profile.followers.all")
+    class Meta:
+        model = User
+        fields = ['users']
+
+class UserFollowingSerializer(serializers.ModelSerializer):    
+    users = UserSubFollowingSerializer(many=True, source="profile.following.all")
+    class Meta:
+        model = User
+        fields = ['users']
+
+class UserRetrieveSerializer(serializers.ModelSerializer):
+    followers = serializers.IntegerField(source="profile.followers.count")
+    following = serializers.IntegerField(source="profile.following.count")
+    image = serializers.ImageField(source="profile.image")
+    description = serializers.CharField(source="profile.description")
+    class Meta:
+        model = User
+        fields = ['username', 'first_name', 'last_name', 'image', 'description', 'followers', 'following']
+
