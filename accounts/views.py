@@ -69,8 +69,10 @@ class UserFollowView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request, pk=None):
-        user = User.objects.get(pk=pk)
-        print(user.profile.followers.filter(pk=request.user.pk).exists())
+        try:
+            user = User.objects.get(pk=pk)
+        except:
+            return Response({"error": "User doesn't exist"}, status=status.HTTP_400_BAD_REQUEST)
 
         if user.profile.followers.filter(pk=request.user.pk).exists():
             return Response({"error": "Already following this user!"}, status=status.HTTP_400_BAD_REQUEST)
@@ -87,7 +89,11 @@ class UserUnfollowView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request, pk=None):
-        user = User.objects.get(pk=pk)
+        try:
+            user = User.objects.get(pk=pk)
+        except:
+            return Response({"error": "User doesn't exist"}, status=status.HTTP_400_BAD_REQUEST)
+
         if user.profile.followers.filter(pk=request.user.pk).exists():
             user.profile.followers.remove(request.user)
             user.save()
