@@ -4,6 +4,7 @@ from django.contrib.auth.models import User
 from rest_framework.validators import UniqueValidator
 from django.contrib.auth.password_validation import validate_password
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from feed.models import Post
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     @classmethod
@@ -89,22 +90,16 @@ class UserUpdateSerializer(serializers.ModelSerializer):
         # instance =super().update(instance, validated_data)
         return instance    
 
-class UserSubFollowersSerializer(serializers.ModelSerializer):    
-    user = serializers.IntegerField(source="id")
-    user_image = serializers.ImageField(use_url=True, source="profile.image")
-    class Meta:
-        model = User
-        fields = ['user', 'username', 'user_image']
+
 
 class UserSubFollowingSerializer(serializers.ModelSerializer):    
-    user = serializers.IntegerField(source="id")
-    user_image = serializers.ImageField(use_url=True, source="profile.image")
+    image = serializers.ImageField(use_url=True, source="profile.image")
     class Meta:
         model = User
-        fields = ['user', 'username', 'user_image']
+        fields = ['id', 'username', 'image']
 
 class UserFollowersSerializer(serializers.ModelSerializer):    
-    users = UserSubFollowersSerializer(many=True, source="profile.followers.all")
+    users = UserSubFollowingSerializer(many=True, source="profile.followers.all")
     class Meta:
         model = User
         fields = ['users']
@@ -115,12 +110,18 @@ class UserFollowingSerializer(serializers.ModelSerializer):
         model = User
         fields = ['users']
 
+class UserPostsSerialzer(serializers.ModelSerializer):
+    class Meta:
+        model = Post
+        fields = ['id', 'video']
+
 class UserRetrieveSerializer(serializers.ModelSerializer):
     followers = serializers.IntegerField(source="profile.followers.count")
     following = serializers.IntegerField(source="profile.following.count")
     image = serializers.ImageField(source="profile.image")
     description = serializers.CharField(source="profile.description")
+    posts = UserPostsSerialzer(source='post_set.all', many=True)
     class Meta:
         model = User
-        fields = ['username', 'first_name', 'last_name', 'image', 'description', 'followers', 'following']
+        fields = ['id','username', 'first_name', 'last_name', 'image', 'description', 'followers', 'following', 'posts']
 
