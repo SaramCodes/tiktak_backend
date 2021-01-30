@@ -1,5 +1,6 @@
 __pycache__/
 videos/
+profile_pictures/
 *.sqlite3
 *.pyc
 *.mp4

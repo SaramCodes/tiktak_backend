@@ -3,11 +3,11 @@ from .models import Post, Comment
 from django.contrib.auth.models import User
 
 class UserSerializer(serializers.ModelSerializer):
-    user = serializers.IntegerField(source="id")
     user_image = serializers.ImageField(use_url=True, source="profile.image")
+    followers = serializers.PrimaryKeyRelatedField(source='profile.followers.all', read_only=True, many=True)
     class Meta:
         model = User
-        fields = ['user', 'username', 'user_image']
+        fields = ['id', 'username', 'user_image', 'followers']
 
 class PostListCreateSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)

@@ -116,8 +116,10 @@ class UserPostsSerialzer(serializers.ModelSerializer):
         fields = ['id', 'video']
 
 class UserRetrieveSerializer(serializers.ModelSerializer):
-    followers = serializers.IntegerField(source="profile.followers.count")
-    following = serializers.IntegerField(source="profile.following.count")
+    # followers = serializers.IntegerField(source="profile.followers.count")
+    # following = serializers.IntegerField(source="profile.following.count")
+    followers = UserSubFollowingSerializer(many=True, source="profile.followers.all")
+    following = UserSubFollowingSerializer(many=True, source="profile.following.all")
     image = serializers.ImageField(source="profile.image")
     description = serializers.CharField(source="profile.description")
     posts = UserPostsSerialzer(source='post_set.all', many=True)
